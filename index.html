@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Poxel-like — Low Poly Shooter</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="game-container">
+  <canvas id="game-canvas"></canvas>
+
+  <div id="hud" class="hidden">
+    <div id="crosshair">+</div>
+    <div id="hud-top">
+      <div id="health-box"><span class="label">HP</span><div class="bar"><div id="health-fill"></div></div><span id="health-text">100</span></div>
+      <div id="armor-box"><span class="label">AR</span><div class="bar"><div id="armor-fill"></div></div><span id="armor-text">0</span></div>
+      <div id="score-box">Счёт: <span id="score-text">0</span></div>
+      <div id="coins-box">💰 <span id="coins-text">0</span></div>
+    </div>
+    <div id="hud-bottom">
+      <div id="weapon-name">Pistol</div>
+      <div id="ammo-text">12 / 48</div>
+    </div>
+    <div id="kill-feed"></div>
+    <div id="hit-marker">×</div>
+  </div>
+
+  <div id="damage-overlay"></div>
+
+  <div id="menu" class="overlay">
+    <h1>POXEL <span class="accent">CLONE</span></h1>
+    <p class="subtitle">Low-poly шутер с кейсами и магазином</p>
+    <div class="menu-stats">
+      <div>💰 Монеты: <span id="menu-coins">0</span></div>
+      <div>🏆 Рекорд: <span id="menu-best">0</span></div>
+    </div>
+    <div class="menu-buttons">
+      <button id="btn-play" class="big-btn">Играть</button>
+      <button id="btn-shop">Магазин</button>
+      <button id="btn-cases">Кейсы 🎁</button>
+      <button id="btn-inventory">Инвентарь</button>
+      <button id="btn-controls">Управление</button>
+    </div>
+    <div class="hint">Подсказка: WASD — движение, Space — прыжок, ЛКМ — стрелять, R — перезарядка, 1/2/3 — оружие</div>
+  </div>
+
+  <div id="shop" class="overlay panel hidden">
+    <h2>Магазин оружия</h2>
+    <div id="shop-grid"></div>
+    <button class="close-btn">Назад</button>
+  </div>
+
+  <div id="cases-screen" class="overlay panel hidden">
+    <h2>Кейсы</h2>
+    <div id="cases-grid"></div>
+    <div id="roulette-area" class="hidden">
+      <div id="roulette-track"></div>
+      <div id="roulette-pointer"></div>
+      <div id="roulette-result"></div>
+    </div>
+    <button class="close-btn">Назад</button>
+  </div>
+
+  <div id="inventory-screen" class="overlay panel hidden">
+    <h2>Инвентарь</h2>
+    <div id="inventory-grid"></div>
+    <button class="close-btn">Назад</button>
+  </div>
+
+  <div id="controls-screen" class="overlay panel hidden">
+    <h2>Управление</h2>
+    <ul class="controls-list">
+      <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> — движение</li>
+      <li><kbd>Space</kbd> — прыжок</li>
+      <li><kbd>Shift</kbd> — бег</li>
+      <li><kbd>ЛКМ</kbd> — стрельба</li>
+      <li><kbd>R</kbd> — перезарядка</li>
+      <li><kbd>1</kbd> / <kbd>2</kbd> / <kbd>3</kbd> — смена оружия</li>
+      <li><kbd>Esc</kbd> — пауза / меню</li>
+    </ul>
+    <button class="close-btn">Назад</button>
+  </div>
+
+  <div id="gameover" class="overlay hidden">
+    <h2>Раунд окончен</h2>
+    <div class="result-stats">
+      <div>Убито: <span id="result-kills">0</span></div>
+      <div>Счёт: <span id="result-score">0</span></div>
+      <div>Заработано: 💰 <span id="result-coins">0</span></div>
+    </div>
+    <div class="menu-buttons">
+      <button id="btn-replay" class="big-btn">Заново</button>
+      <button id="btn-back-menu">В меню</button>
+    </div>
+  </div>
+
+  <div id="pause" class="overlay hidden">
+    <h2>Пауза</h2>
+    <div class="menu-buttons">
+      <button id="btn-resume" class="big-btn">Продолжить</button>
+      <button id="btn-quit">Выйти в меню</button>
+    </div>
+  </div>
+
+  <div id="notification"></div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+  }
+}
+</script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
