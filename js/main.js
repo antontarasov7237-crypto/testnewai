@@ -1,48 +1,100 @@
-// Точка входа: монтирует игру, навешивает обработчики на меню
-import { Game } from './game.js';
+// Точка входа: сначала навешиваем обработчики кнопок, игру создаём лениво
+// при первом клике «Играть», чтобы возможные ошибки Three.js / WebGL
+// не ломали меню целиком.
 import * as UI from './ui.js';
 import * as Storage from './storage.js';
 
 const canvas = document.getElementById('game-canvas');
-const game = new Game(canvas);
+let game = null;
+let gameInitError = null;
 
-UI.refreshMenuStats();
-UI.showScreen('#menu');
-
-function open(screenId, render) {
-  UI.showScreen(screenId);
-  render && render();
+async function ensureGame() {
+  if (game || gameInitError) return game;
+  try {
+    const { Game } = await import('./game.js');
+    game = new Game(canvas);
+  } catch (err) {
+    gameInitError = err;
+    console.error('Не удалось инициализировать игру:', err);
+    UI.notify('Ошибка инициализации игры: ' + (err?.message || err));
+  }
+  return game;
 }
-
-document.getElementById('btn-play').addEventListener('click', () => game.start());
-document.getElementById('btn-shop').addEventListener('click', () => open('#shop', () => UI.renderShop(onChange)));
-document.getElementById('btn-cases').addEventListener('click', () => open('#cases-screen', () => UI.renderCases(onChange)));
-document.getElementById('btn-inventory').addEventListener('click', () => open('#inventory-screen', () => UI.renderInventory(onChange)));
-document.getElementById('btn-controls').addEventListener('click', () => UI.showScreen('#controls-screen'));
-
-document.querySelectorAll('.close-btn').forEach(btn => {
-  btn.addEventListener('click', () => UI.showScreen('#menu'));
-});
-
-document.getElementById('btn-replay').addEventListener('click', () => game.start());
-document.getElementById('btn-back-menu').addEventListener('click', () => {
-  document.getElementById('gameover').classList.add('hidden');
-  UI.showScreen('#menu');
-  UI.refreshMenuStats();
-});
-
-document.getElementById('btn-resume').addEventListener('click', () => game.resume());
-document.getElementById('btn-quit').addEventListener('click', () => game.quit());
 
 function onChange() {
   UI.refreshMenuStats();
-  // Если экипировка изменилась — обновим модель оружия в руках
   if (game && game.weapons) {
     game.weapons.setWeapon(game.weapons.currentWeaponId);
   }
 }
 
-// Сообщение при отсутствии WebGL
+function bindMenuButtons() {
+  const on = (id, fn) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', fn);
+  };
+
+  on('btn-play', async () => {
+    const g = await ensureGame();
+    if (!g) return;
+    g.start();
+  });
+  on('btn-shop', () => {
+    UI.showScreen('#shop');
+    UI.renderShop(onChange);
+  });
+  on('btn-cases', () => {
+    UI.showScreen('#cases-screen');
+    UI.renderCases(onChange);
+  });
+  on('btn-inventory', () => {
+    UI.showScreen('#inventory-screen');
+    UI.renderInventory(onChange);
+  });
+  on('btn-controls', () => UI.showScreen('#controls-screen'));
+
+  document.querySelectorAll('.close-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      UI.showScreen('#menu');
+      UI.refreshMenuStats();
+    });
+  });
+
+  on('btn-replay', async () => {
+    const g = await ensureGame();
+    if (!g) return;
+    g.start();
+  });
+  on('btn-back-menu', () => {
+    document.getElementById('gameover')?.classList.add('hidden');
+    UI.showScreen('#menu');
+    UI.refreshMenuStats();
+  });
+
+  on('btn-resume', () => game && game.resume());
+  on('btn-quit', () => game && game.quit());
+}
+
+function init() {
+  bindMenuButtons();
+  UI.refreshMenuStats();
+  UI.showScreen('#menu');
+  // Предзагружаем модуль игры, чтобы при клике «Играть» await разрешился из кэша
+  // и не терял user-gesture (важно для pointer lock).
+  import('./game.js').catch((err) => {
+    console.warn('Не удалось предзагрузить game.js:', err);
+  });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init, { once: true });
+} else {
+  init();
+}
+
 window.addEventListener('error', (e) => {
-  console.error('Ошибка:', e.message);
+  console.error('Глобальная ошибка:', e.message);
+});
+window.addEventListener('unhandledrejection', (e) => {
+  console.error('Unhandled promise:', e.reason);
 });
