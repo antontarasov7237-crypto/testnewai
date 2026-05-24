@@ -135,12 +135,39 @@ export function renderInventory(onChange) {
   const grid = $('#inventory-grid');
   grid.innerHTML = '';
   const state = Storage.load();
-  let any = false;
+
+  // Заголовок: оружие
+  const wHeader = document.createElement('div');
+  wHeader.style.cssText = 'grid-column:1/-1;color:#ffcc00;letter-spacing:1px;font-weight:700;padding:6px 2px;';
+  wHeader.textContent = 'Оружие';
+  grid.appendChild(wHeader);
+
+  state.ownedWeapons.forEach((weaponId) => {
+    const w = WEAPONS[weaponId];
+    const equippedSkinId = state.equipped[weaponId];
+    const skin = getSkin(weaponId, equippedSkinId);
+    const card = document.createElement('div');
+    card.className = 'card owned';
+    card.innerHTML = `
+      <div class="preview" style="font-size:36px">🔫</div>
+      <div class="title">${w.name}</div>
+      <div class="desc">Скин: ${skin.name} · Урон ${w.damage}</div>
+    `;
+    grid.appendChild(card);
+  });
+
+  // Заголовок: скины
+  const sHeader = document.createElement('div');
+  sHeader.style.cssText = 'grid-column:1/-1;color:#ffcc00;letter-spacing:1px;font-weight:700;padding:14px 2px 6px;';
+  sHeader.textContent = 'Скины';
+  grid.appendChild(sHeader);
+
+  let anySkin = false;
   Object.entries(state.ownedSkins).forEach(([weaponId, ids]) => {
-    ids.forEach(skinId => {
+    ids.forEach((skinId) => {
       const skin = getSkin(weaponId, skinId);
       const equipped = state.equipped[weaponId] === skinId;
-      any = true;
+      anySkin = true;
       const card = document.createElement('div');
       card.className = `card rarity-${skin.rarity}` + (equipped ? ' equipped' : '');
       card.innerHTML = `
@@ -161,8 +188,11 @@ export function renderInventory(onChange) {
       grid.appendChild(card);
     });
   });
-  if (!any) {
-    grid.innerHTML = '<div style="grid-column:1/-1;color:#8a94a4;padding:20px">Инвентарь пуст — откройте кейс.</div>';
+  if (!anySkin) {
+    const empty = document.createElement('div');
+    empty.style.cssText = 'grid-column:1/-1;color:#8a94a4;padding:20px';
+    empty.textContent = 'Скинов нет — откройте кейс.';
+    grid.appendChild(empty);
   }
 }
 
